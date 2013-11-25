@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bootstrap 101 Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+
+
+
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-4 column">
+    </div>
+    <div class="col-md-4 column">
+
+<h1>Secret Santa!</h1>
+
+    </div>
+    <div class="col-md-4 column">
+    </div>
+  </div>
+</div>
+
+
+<div class="col-md-12 column">
+
+      <ul class="nav nav-pills">
+<!-- 
+        <li class="dropdown pull-right">
+            <a href="/auth/logout">Logout</a>
+        </li> -->
+        &nbsp;
+      </ul>
+</div>
+
+
+
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-4 column">
+		</div>
+		<div class="col-md-4 column">
+
+
+{{msg}}
+
+<form class="form-horizontal" action="/auth/login" method="POST">
+
+<input type="hidden" name="from_page" value="{{from_page}}" />
+
+<fieldset>
+
+<!-- Form Name -->
+<legend>Login</legend>
+
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="username">E-Mail</label>
+  <div class="controls">
+    <input id="username" name="username" type="text" placeholder="e-mail" class="input-xlarge" required="">
+    <p class="help-block">e-mail</p>
+  </div>
+</div>
+
+<!-- Password input-->
+<div class="control-group">
+  <label class="control-label" for="password">Password</label>
+  <div class="controls">
+    <input id="password" name="password" type="password" placeholder="password" class="input-xlarge" required="">
+    <p class="help-block">Password</p>
+  </div>
+</div>
+
+<!-- Button -->
+<div class="control-group">
+  <label class="control-label" for="submit"></label>
+  <div class="controls">
+    <button class="btn btn-primary" type="submit">Login</button>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
+
+		</div>
+		<div class="col-md-4 column">
+		</div>
+	</div>
+</div>
+
+
+
+  </body>
+</html>
