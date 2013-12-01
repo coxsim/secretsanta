@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important { color: #336699; }
+    </style>
+{% endblock %}
+{% block content %}
+
+<h2>Admin</h2>
+
+<p><a href="/admin/clearwishlist" class="btn btn-primary">Clear Wishlist</a></p>
+<p><a href="/admin/generate" class="btn btn-primary">Generate Pairs</a></p>
+<p><a href="/admin/names" class="btn btn-primary">Show Names</a></p>
+<p><a href="/admin/passwords" class="btn btn-primary">Show Passwords</a></p>
+<p><a href="/admin/wishlist" class="btn btn-primary">Show Wishlist</a></p>
+<p><a href="/admin/toggle_enable_emails" class="btn btn-primary">Toggle Emails</a> - Currently {{emails_enabled}}</p>
+
+{% endblock %}
+
+

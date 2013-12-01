@@ -9,14 +9,20 @@ import urllib
 
 SESSION_KEY = '_cp_username'
 
-def check_credentials(username, password):
+def check_credentials(passwords, username, password):
     """Verifies credentials for username and password.
     Returns None on success or a string describing the error on failure"""
     # Adapt to your needs
-    if username in ('joe', 'steve') and password == 'secret':
-        return None
-    else:
-        return u"Incorrect username or password."
+
+    return None if passwords.get(username.lower(), None) == password else "Invalid username or password"
+
+    # if username.lower() = "simon.cox@morganstanley.com":
+
+
+    # if username in ('joe', 'steve') and password == 'secret':
+    #     return None
+    # else:
+    #     return u"Incorrect username or password."
     
     # An example implementation which uses an ORM could be:
     # u = User.get(username)
@@ -31,7 +37,7 @@ def check_auth(*args, **kwargs):
     conditions that the user must fulfill"""
     conditions = cherrypy.request.config.get('auth.require', None)
     # format GET params
-    get_parmas = urllib.quote(cherrypy.request.request_line.split()[1])
+    get_params = urllib.quote(cherrypy.request.request_line.split()[1])
     if conditions is not None:
         username = cherrypy.session.get(SESSION_KEY)
         if username:
@@ -40,10 +46,10 @@ def check_auth(*args, **kwargs):
                 # A condition is just a callable that returns true orfalse
                 if not condition():
                     # Send old page as from_page parameter
-                    raise cherrypy.HTTPRedirect("/auth/login?from_page=%s" % get_parmas)
+                    raise cherrypy.HTTPRedirect("/auth/login?from_page=%s" % get_params)
         else:
             # Send old page as from_page parameter
-            raise cherrypy.HTTPRedirect("/auth/login?from_page=%s" %get_parmas) 
+            raise cherrypy.HTTPRedirect("/auth/login?from_page=%s" %get_params) 
     
 cherrypy.tools.auth = cherrypy.Tool('before_handler', check_auth)
 
@@ -70,7 +76,9 @@ def require(*conditions):
 def member_of(groupname):
     def check():
         # replace with actual check if <username> is in <groupname>
-        return cherrypy.request.login == 'joe' and groupname == 'admin'
+        # return cherrypy.request.login == 'joe' and groupname == 'admin'
+        if groupname == "admin":
+            return cherrypy.request.login == "simon.cox@morganstanley.com"
     return check
 
 def name_is(reqd_username):
@@ -103,8 +111,9 @@ def all_of(*conditions):
 
 class AuthController(object):
 
-    def __init__(self, env):
+    def __init__(self, env, passwords):
         self.env = env
+        self.passwords = passwords
     
     def on_login(self, username):
         """Called on successful login"""
@@ -132,8 +141,10 @@ class AuthController(object):
     def login(self, username=None, password=None, from_page="/"):
         if username is None or password is None:
             return self.get_loginform("", from_page=from_page)
+
+        username = username.lower()
         
-        error_msg = check_credentials(username, password)
+        error_msg = check_credentials(self.passwords, username, password)
         if error_msg:
             return self.get_loginform(username, error_msg, from_page)
         else:
