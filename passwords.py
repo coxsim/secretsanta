@@ -3,7 +3,7 @@
 import sys
 import string
 
-givers = [(name.strip(), email.strip()) for (name, email) in (line.split(',') for line in sys.stdin if line and not line.startswith ("#"))]
+givers = [(name.strip(), email.strip()) for (name, email) in (line.split(';') for line in sys.stdin if line and not line.startswith ("#"))]
 
 import random
 
