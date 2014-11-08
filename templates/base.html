@@ -11,7 +11,7 @@
     body
     {
 
-    background-image: url('http://onwardstate.com/wp-content/uploads/2011/12/Secret-Santa.jpg');
+    background-image: url('/static/Secret-Santa.jpg');
     background-size: 100%;
     /*
      background-size: 800px;*/
@@ -61,6 +61,15 @@ padding-bottom: 20px;
             <li {% if page == "recipient" %}class="active"{% endif %}><a href="/">Recipient</a></li>
             <li {% if page == "wishlist"  %}class="active"{% endif %}><a href="/wishlist">Wishlist</a></li>
             <li {% if page == "rules"     %}class="active"{% endif %}><a href="/rules">Rules</a></li>
+            {% if "admin" in user_groups %}
+            <li><a href="/admin/names">Names</a></li>
+            <li><a href="/admin/passwords">Passwords</a></li>
+            <li><a href="/admin/pairs">Pairs</a></li>
+            <li><a href="/admin/blacklist">Blacklist</a></li>
+            <li><a href="/admin/wishlist">Wishlist</a></li>
+            <li><a href="/admin/clearwishlist">Clear Wishlist</a></li>
+            <li><a href="/admin/generate">Generate</a></li>
+            {% endif %}
           </ul>
           <p class="navbar-text pull-right">{% if username %}{{username}} | <a href="/auth/logout">Logout</a>{% else %} &nbsp; {% endif %}</p>
         </div>
@@ -71,6 +80,7 @@ padding-bottom: 20px;
             <div class="col-md-4 column">
             </div>
             <div class="col-md-4 column" style="opacity: 1;">
+User gruops {{ user_groups }}
 
 {% block content %}{% endblock %}
 

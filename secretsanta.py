@@ -3,6 +3,9 @@
 import random
 import cherrypy
 import os
+import codecs
+import shutil
+import datetime
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -29,11 +32,15 @@ config = {'/': {"tools.sessions.on" : True,
 
 
 def read_dict_file(filename, separator = ";"):
-    with open(os.path.join(data_dir, filename), "r") as f:
-        return dict( line.rstrip().split(separator) for line in f )
+    with codecs.open(os.path.join(data_dir, filename), "r", encoding='utf-8') as f:
+        return dict( line.rstrip().split(separator) for line in f if not line.startswith("#") )
 
 def write_dict_file(filename, separator, dictionary, append = False):
-    with open(os.path.join(data_dir, filename), "w+" if append else "w") as f:
+    target = os.path.join(data_dir, filename)
+    backup = os.path.join(data_dir, "%s.%s.bak" % (filename, datetime.datetime.now().strftime("%Y%m%d.%H%M%S")))
+    shutil.copyfile(target, backup)
+
+    with codecs.open(target, "w+" if append else "w", encoding='utf-8') as f:
         for (k,v) in dictionary.iteritems():
             f.write("%s%s%s\n" % (k, separator, v))
 
@@ -42,6 +49,10 @@ def read_passwords():
 
 def read_names():
     return dict( (email.lower(), name) for (name, email) in read_dict_file("names.txt").iteritems() )
+
+def read_groups():
+    return dict( (email.lower(), group) for (email, group) in read_dict_file("groups.txt").iteritems() )
+
 
 def read_pairs():
     return read_dict_file("pairs.txt")
@@ -72,11 +83,11 @@ class AdminArea:
     def index(self):
         emails_enabled = (read_settings().get("emails_enabled", "False") == "True")
         tmpl = env.get_template( "admin.html" )
-        return tmpl.render( emails_enabled=emails_enabled )
+        return tmpl.render( emails_enabled=emails_enabled,
+                            user_groups = cherrypy.session.get("user_groups", {}) )
 
     @cherrypy.expose
     def toggle_enable_emails(self):
-        # emails_enabled = read_settings().get("emails_enabled", False)
         settings = read_settings()
         settings["emails_enabled"] = (settings.get("emails_enabled", "False") != "True")
         write_settings(settings)
@@ -130,14 +141,15 @@ class Root:
         'tools.auth.on': True
     }
     
-    auth = AuthController(env, read_passwords())
+    auth = AuthController(env, read_passwords(), read_groups())
     
     admin = AdminArea()
 
     @cherrypy.expose
     @require(lambda: True)
     def index(self):
-        names = read_names()
+        names = read_names()        
+        print names
         giver_full_name = names[cherrypy.request.login]
         pairs = read_pairs()
         recipient = pairs[cherrypy.request.login]        
@@ -146,7 +158,8 @@ class Root:
                             username=cherrypy.request.login, 
                             giver_forename=giver_full_name.split(" ")[0],
                             recipient_full_name=names[recipient],
-                            recipient_forename=names[recipient].split(" ")[0] )
+                            recipient_forename=names[recipient].split(" ")[0],
+                            user_groups = cherrypy.session.get("user_groups", {}) )
 
     @cherrypy.expose
     @require(lambda: True)
@@ -166,13 +179,16 @@ class Root:
                             username=cherrypy.request.login, 
                             wishlist=wishlist.values(), 
                             user_wish=user_wish,
-                            recipient_forename=names[recipient].split(" ")[0]  )
+                            recipient_forename=names[recipient].split(" ")[0] ,
+                            user_groups = cherrypy.session.get("user_groups", {}) )
 
     @cherrypy.expose
     @require(lambda: True)
     def rules(self):
         tmpl = env.get_template( "rules.html" )
-        return tmpl.render( page="rules", username=cherrypy.request.login )
+        return tmpl.render( page="rules", 
+                            username=cherrypy.request.login,
+                            user_groups = cherrypy.session.get("user_groups", {}) )
 
 
 app = cherrypy.tree.mount(Root(), "/", config)

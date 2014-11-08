@@ -12,24 +12,9 @@ SESSION_KEY = '_cp_username'
 def check_credentials(passwords, username, password):
     """Verifies credentials for username and password.
     Returns None on success or a string describing the error on failure"""
-    # Adapt to your needs
 
     return None if passwords.get(username.lower(), None) == password else "Invalid username or password"
 
-    # if username.lower() = "simon.cox@morganstanley.com":
-
-
-    # if username in ('joe', 'steve') and password == 'secret':
-    #     return None
-    # else:
-    #     return u"Incorrect username or password."
-    
-    # An example implementation which uses an ORM could be:
-    # u = User.get(username)
-    # if u is None:
-    #     return u"Username %s is unknown to me." % username
-    # if u.password != md5.new(password).hexdigest():
-    #     return u"Incorrect password"
 
 def check_auth(*args, **kwargs):
     """A tool that looks in config for 'auth.require'. If found and it
@@ -75,10 +60,7 @@ def require(*conditions):
 
 def member_of(groupname):
     def check():
-        # replace with actual check if <username> is in <groupname>
-        # return cherrypy.request.login == 'joe' and groupname == 'admin'
-        if groupname == "admin":
-            return cherrypy.request.login == "simon.cox@morganstanley.com"
+        return groupname in cherrypy.session["user_groups"]
     return check
 
 def name_is(reqd_username):
@@ -111,29 +93,22 @@ def all_of(*conditions):
 
 class AuthController(object):
 
-    def __init__(self, env, passwords):
+    def __init__(self, env, passwords, groups):
         self.env = env
         self.passwords = passwords
+        self.groups = groups
     
     def on_login(self, username):
         """Called on successful login"""
+        cherrypy.request.login = username
+        cherrypy.session[SESSION_KEY] = username
+        user_groups = { group for (group, users) in self.groups.iteritems() if username in users }
+        cherrypy.session["user_groups"] = user_groups        
     
     def on_logout(self, username):
         """Called on logout"""
     
     def get_loginform(self, username, msg="Enter login information", from_page="/"):
-        # return """<html><body>
-        #     <form method="post" action="/auth/login">
-        #     <input type="hidden" name="from_page" value="%(from_page)s" />
-        #     %(msg)s<br />
-        #     Username: <input type="text" name="username" value="%(username)s" /><br />
-        #     Password: <input type="password" name="password" /><br />
-        #     <input type="submit" value="Log in" />
-        # </body></html>""" % locals()
-
-        print "get_loginform %s" % from_page
-
-
         tmpl = self.env.get_template( "login.html" )
         return tmpl.render( from_page = from_page, msg = msg )
     
@@ -145,11 +120,11 @@ class AuthController(object):
         username = username.lower()
         
         error_msg = check_credentials(self.passwords, username, password)
+        #print "error_msg: %s" % error_msg
         if error_msg:
             return self.get_loginform(username, error_msg, from_page)
         else:
-            print from_page
-            cherrypy.session[SESSION_KEY] = cherrypy.request.login = username
+            #print "from_page: %s" % from_page
             self.on_login(username)
             raise cherrypy.HTTPRedirect(from_page or "/")
     
