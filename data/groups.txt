@@ -1,2 +1,1 @@
-admin;a
-admin;simon.cox@morganstanley.com
+simon.cox@morganstanley.com;admin
