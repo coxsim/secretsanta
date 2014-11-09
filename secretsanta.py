@@ -1,34 +1,31 @@
 #!/usr/bin/python
 
 import random
-import cherrypy
 import os
 import codecs
 import shutil
 import datetime
+from functools import wraps
 
 from jinja2 import Environment, FileSystemLoader
 
-from auth import *
+from flask import Flask
+from flask import render_template
+from flask import request
+from flask import Response
+from flask import session
+from flask import redirect
+
+
+
+app = Flask(__name__)
+app.secret_key = 'SALKAS DFLkdaDSF&*5462SDAsd@E#'
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(current_dir, "data")
 env = Environment(loader=FileSystemLoader(
     os.path.join(current_dir,'templates'))
 )
-
-cherrypy.config.update({'server.socket_host': '0.0.0.0',
-                        'server.socket_port': 8081,
-                       })
- 
-config = {'/': {"tools.sessions.on" : True,
-                "tools.sessions.storage_type" : "file",
-                "tools.sessions.storage_path" : os.path.join(current_dir, "sessions"),
-                "tools.sessions.timeout" : 60,
-                "tools.staticdir.root" : os.path.join(current_dir, "sessions")},
-          '/static': {"tools.staticdir.root" : os.path.join(current_dir, "static"),
-                      "tools.staticdir.dir"  : ".",
-                      "tools.staticdir.on"  : True}, }
 
 
 def read_dict_file(filename, separator = ";"):
@@ -70,127 +67,178 @@ def write_settings(settings):
     write_dict_file("settings.txt", ":", settings)
 
 
-class AdminArea:
-    
-    # all methods in this controller (and subcontrollers) is
-    # open only to members of the admin group
-    
-    _cp_config = {
-        'auth.require': [member_of('admin')]
-    }
-    
-    @cherrypy.expose
-    def index(self):
-        emails_enabled = (read_settings().get("emails_enabled", "False") == "True")
-        tmpl = env.get_template( "admin.html" )
-        return tmpl.render( emails_enabled=emails_enabled,
-                            user_groups = cherrypy.session.get("user_groups", {}) )
-
-    @cherrypy.expose
-    def toggle_enable_emails(self):
-        settings = read_settings()
-        settings["emails_enabled"] = (settings.get("emails_enabled", "False") != "True")
-        write_settings(settings)
-        raise cherrypy.HTTPRedirect("/admin")
+PASSWORDS = read_passwords()
+GROUPS = read_groups()
 
 
-    @cherrypy.expose
-    def names(self):
-        return str(read_names())
 
-    @cherrypy.expose
-    def passwords(self):
-        return str(read_passwords())
+def check_auth(username, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    username = username.lower()
+    if PASSWORDS.get(username, None) != password:
+        return False
 
-    @cherrypy.expose
-    def pairs(self):
-        return str(read_pairs())
+    session["username"] = username
+    return True
 
-    @cherrypy.expose
-    def blacklist(self):
-        return str(read_blacklist())
+def user_groups(username):
+    return { group for (group, users) in GROUPS.iteritems() if username in users }
 
-    @cherrypy.expose
-    def wishlist(self):
-        return str(read_wishlist())
+def get_current_user_groups():
+    return user_groups(session["username"])
 
-    @cherrypy.expose
-    def clearwishlist(self):
-        write_dict_file("wishlist.txt", ";", {} )
-        return "done"
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response(
+    'Could not verify your access level for that URL.\n'
+    'You have to login with proper credentials', 401,
+    {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
-    @cherrypy.expose
-    def generate(self):
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
 
-        givers = read_names().keys()
-        takers = list(givers)
+def requires_roles(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if not get_current_user_groups().issuperset(roles):
+                return Response("Requires %s roles" % ",".join(roles), 403)
+            return f(*args, **kwargs)
+        return wrapped
+    return wrapper
 
-        blacklist_pairs = read_blacklist()
+@app.route("/auth/logout")
+def logout():
+    return authenticate()
 
-        while any(givers[i] == takers[i] or (givers[i], takers[i]) in blacklist_pairs for i in range(len(givers))):
-            random.shuffle(takers)
 
-        write_dict_file("pairs.txt", ";", dict( (givers[i], takers[i]) for i in range(len(givers)) ) )
+@app.route("/admin")
+@requires_auth
+@requires_roles("admin")
+def admin_index():
+    emails_enabled = (read_settings().get("emails_enabled", "False") == "True")
+    return render_template( "admin.html",
+                        emails_enabled=emails_enabled,
+                        user_groups = get_current_user_groups() )
 
-        return "done"
+@app.route("/admin/toggle_enable_emails")
+@requires_auth
+@requires_roles("admin")
+def admin_toggle_enable_emails():
+    settings = read_settings()
+    settings["emails_enabled"] = (settings.get("emails_enabled", "False") != "True")
+    write_settings(settings)
+    return redirect("/admin", code=302)
 
-class Root:
-    
-    _cp_config = {
-        'tools.sessions.on': True,
-        'tools.auth.on': True
-    }
-    
-    auth = AuthController(env, read_passwords(), read_groups())
-    
-    admin = AdminArea()
 
-    @cherrypy.expose
-    @require(lambda: True)
-    def index(self):
-        names = read_names()        
-        print names
-        giver_full_name = names[cherrypy.request.login]
-        pairs = read_pairs()
-        recipient = pairs[cherrypy.request.login]        
-        tmpl = env.get_template( "santa.html" )
-        return tmpl.render( page="recipient", 
-                            username=cherrypy.request.login, 
+@app.route("/admin/names")
+@requires_auth
+@requires_roles("admin")
+def admin_names():
+    return str(read_names())
+
+@app.route("/admin/passwords")
+@requires_auth
+@requires_roles("admin")
+def admin_passwords():
+    return str(read_passwords())
+
+@app.route("/admin/pairs")
+@requires_auth
+@requires_roles("admin")
+def admin_pairs():
+    return str(read_pairs())
+
+@app.route("/admin/blacklist")
+@requires_auth
+@requires_roles("admin")
+def admin_blacklist():
+    return str(read_blacklist())
+
+@app.route("/admin/wishlist")
+@requires_auth
+@requires_roles("admin")
+def admin_wishlist():
+    return str(read_wishlist())
+
+@app.route("/admin/clearwishlist")
+@requires_auth
+@requires_roles("admin")
+def admin_clearwishlist():
+    write_dict_file("wishlist.txt", ";", {} )
+    return "done"
+
+@app.route("/admin/generate")
+@requires_auth
+@requires_roles("admin")
+def admin_generate():
+
+    givers = read_names().keys()
+    takers = list(givers)
+
+    blacklist_pairs = read_blacklist()
+
+    while any(givers[i] == takers[i] or (givers[i], takers[i]) in blacklist_pairs for i in range(len(givers))):
+        random.shuffle(takers)
+
+    write_dict_file("pairs.txt", ";", dict( (givers[i], takers[i]) for i in range(len(givers)) ) )
+
+    return "done"
+
+@app.route('/')
+@requires_auth
+def index():
+    names = read_names()        
+    print names
+    giver_full_name = names[session["username"]]
+    pairs = read_pairs()
+    recipient = pairs[session["username"]]
+    return render_template( "santa.html",
+                            page="recipient", 
+                            username=session["username"], 
                             giver_forename=giver_full_name.split(" ")[0],
                             recipient_full_name=names[recipient],
                             recipient_forename=names[recipient].split(" ")[0],
-                            user_groups = cherrypy.session.get("user_groups", {}) )
+                            user_groups = get_current_user_groups() )
 
-    @cherrypy.expose
-    @require(lambda: True)
-    def wishlist(self, user_wish = None):
-        tmpl = env.get_template( "wishlist.html" )
-        wishlist = read_wishlist()
-        if user_wish:
-            wishlist[cherrypy.request.login] = user_wish
-            write_dict_file("wishlist.txt", ";", wishlist)
-        else:
-            user_wish = wishlist.get(cherrypy.request.login, "")
+@app.route("/wishlist", methods=['GET', 'POST'])
+@requires_auth
+def wishlist():
+    user_wish = request.form.get("user_wish")
+    wishlist = read_wishlist()
+    if user_wish:
+        wishlist[session["username"]] = user_wish
+        write_dict_file("wishlist.txt", ";", wishlist)
+    else:
+        user_wish = wishlist.get(session["username"], "")
 
-        names = read_names()           
-        pairs = read_pairs()
-        recipient = pairs[cherrypy.request.login]
-        return tmpl.render( page="wishlist", 
-                            username=cherrypy.request.login, 
+    names = read_names()           
+    pairs = read_pairs()
+    recipient = pairs[session["username"]]
+    return render_template( "wishlist.html",
+                            page="wishlist", 
+                            username=session["username"], 
                             wishlist=wishlist.values(), 
                             user_wish=user_wish,
                             recipient_forename=names[recipient].split(" ")[0] ,
-                            user_groups = cherrypy.session.get("user_groups", {}) )
+                            user_groups = get_current_user_groups() )
 
-    @cherrypy.expose
-    @require(lambda: True)
-    def rules(self):
-        tmpl = env.get_template( "rules.html" )
-        return tmpl.render( page="rules", 
-                            username=cherrypy.request.login,
-                            user_groups = cherrypy.session.get("user_groups", {}) )
+@app.route("/rules")
+@requires_auth
+def rules():
+    return render_template( "rules.html",
+                            page="rules", 
+                            username=session["username"],
+                            user_groups = get_current_user_groups() )
 
 
-app = cherrypy.tree.mount(Root(), "/", config)
-cherrypy.engine.start()
-cherrypy.engine.block()
+if __name__ == '__main__':
+    app.run(debug=True)
