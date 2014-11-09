@@ -62,13 +62,7 @@ padding-bottom: 20px;
             <li {% if page == "wishlist"  %}class="active"{% endif %}><a href="/wishlist">Wishlist</a></li>
             <li {% if page == "rules"     %}class="active"{% endif %}><a href="/rules">Rules</a></li>
             {% if "admin" in user_groups %}
-            <li><a href="/admin/names">Names</a></li>
-            <li><a href="/admin/passwords">Passwords</a></li>
-            <li><a href="/admin/pairs">Pairs</a></li>
-            <li><a href="/admin/blacklist">Blacklist</a></li>
-            <li><a href="/admin/wishlist">Wishlist</a></li>
-            <li><a href="/admin/clearwishlist">Clear Wishlist</a></li>
-            <li><a href="/admin/generate">Generate</a></li>
+            <li><a href="/admin">Admin</a></li>
             {% endif %}
           </ul>
           <p class="navbar-text pull-right">{% if username %}{{username}} | <a href="/auth/logout">Logout</a>{% else %} &nbsp; {% endif %}</p>
