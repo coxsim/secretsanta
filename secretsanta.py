@@ -48,7 +48,7 @@ def read_names():
     return dict( (email.lower(), name) for (name, email) in read_dict_file("names.txt").iteritems() )
 
 def read_groups():
-    return dict( (email.lower(), group.split(",")) for (email, group) in read_dict_file("groups.txt").iteritems() )
+    return dict( (email.lower(), set(group.split(","))) for (email, group) in read_dict_file("groups.txt").iteritems() )
 
 
 def read_pairs():
@@ -109,7 +109,7 @@ def requires_roles(*roles):
     def wrapper(f):
         @wraps(f)
         def wrapped(*args, **kwargs):
-            if not get_current_user_groups().issuperset(roles):
+            if not get_current_user_groups().issuperset(set(roles)):
                 return Response("Requires %s roles" % ",".join(roles), 403)
             return f(*args, **kwargs)
         return wrapped
