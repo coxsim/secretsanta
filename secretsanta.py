@@ -121,12 +121,12 @@ def requires_roles(*roles):
 
 
 
-@app.route("/auth/logout")
+@app.route("/secret-santa/auth/logout")
 def logout():
     return authenticate()
 
 
-@app.route("/admin")
+@app.route("/secret-santa/admin")
 @requires_auth
 @requires_roles("admin")
 def admin_index():
@@ -135,54 +135,54 @@ def admin_index():
                             emails_enabled=emails_enabled,
                             user_groups = get_current_user_groups() )
 
-@app.route("/admin/toggle_enable_emails")
+@app.route("/secret-santa/admin/toggle_enable_emails")
 @requires_auth
 @requires_roles("admin")
 def admin_toggle_enable_emails():
     settings = read_settings()
     settings["emails_enabled"] = (settings.get("emails_enabled", "False") != "True")
     write_settings(settings)
-    return redirect("/admin", code=302)
+    return redirect("/secret-santa/admin", code=302)
 
 
-@app.route("/admin/names")
+@app.route("/secret-santa/admin/names")
 @requires_auth
 @requires_roles("admin")
 def admin_names():
     return str(read_names())
 
-@app.route("/admin/passwords")
+@app.route("/secret-santa/admin/passwords")
 @requires_auth
 @requires_roles("admin")
 def admin_passwords():
     return str(read_passwords())
 
-@app.route("/admin/pairs")
+@app.route("/secret-santa/admin/pairs")
 @requires_auth
 @requires_roles("admin")
 def admin_pairs():
     return render_template("pairs.html", pairs = read_pairs())
 
-@app.route("/admin/blacklist")
+@app.route("/secret-santa/admin/blacklist")
 @requires_auth
 @requires_roles("admin")
 def admin_blacklist():
     return str(read_blacklist())
 
-@app.route("/admin/wishlist")
+@app.route("/secret-santa/admin/wishlist")
 @requires_auth
 @requires_roles("admin")
 def admin_wishlist():
     return str(read_wishlist())
 
-@app.route("/admin/clearwishlist")
+@app.route("/secret-santa/admin/clearwishlist")
 @requires_auth
 @requires_roles("admin")
 def admin_clearwishlist():
     write_dict_file("wishlist.txt", ";", {} )
     return "done"
 
-@app.route("/admin/generate")
+@app.route("/secret-santa/admin/generate")
 @requires_auth
 @requires_roles("admin")
 def admin_generate():
@@ -197,16 +197,16 @@ def admin_generate():
 
     write_dict_file("pairs.txt", ";", dict( zip(givers, takers) ), header = "# Giver;Taker")
 
-    return redirect("/admin/pairs", code=302)
+    return redirect("/secret-santa/admin/pairs", code=302)
 
-@app.route('/')
+@app.route('/secret-santa/')
 def index():
     if request.authorization:
-        return redirect("/recipient", code=302)
+        return redirect("/secret-santa/recipient", code=302)
     else:
         return render_template( "welcome.html", page="welcome" ) 
 
-@app.route('/recipient')
+@app.route('/secret-santa/recipient')
 @requires_auth
 def recipient():
     names = read_names()        
@@ -222,7 +222,7 @@ def recipient():
                             recipient_forename=names[recipient].split(" ")[0],
                             user_groups = get_current_user_groups() )
 
-@app.route("/wishlist", methods=['GET', 'POST'])
+@app.route("/secret-santa/wishlist", methods=['GET', 'POST'])
 @requires_auth
 def wishlist():
     user_wish = request.form.get("user_wish")
@@ -244,7 +244,7 @@ def wishlist():
                             recipient_forename=names[recipient].split(" ")[0] ,
                             user_groups = get_current_user_groups() )
 
-@app.route("/password-request", methods=['GET', 'POST'])
+@app.route("/secret-santa/password-request", methods=['GET', 'POST'])
 @requires_auth
 def password_request():
     username = request.form.get("username", "").strip()
@@ -269,7 +269,7 @@ Your password is:
 
     return render_template( "welcome.html", page = "welcome", message = message, message_level = message_level )
 
-@app.route("/rules")
+@app.route("/secret-santa/rules")
 @requires_auth
 def rules():
     return render_template( "rules.html",

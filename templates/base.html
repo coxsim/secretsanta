@@ -43,20 +43,20 @@
       <div class="navbar navbar-default" style="background-color:rgba(255,255,255,0.8);">
 
         <div class="navbar-header">
-          <a class="navbar-brand" href="/">Secret Santa</a>
+          <a class="navbar-brand" href="/secret-santa/">Secret Santa</a>
         </div>
 
         <div class="navbar-inner">
 
           <ul class="nav navbar-nav">
-            <li {% if page == "recipient" %}class="active"{% endif %}><a href="/recipient">Recipient</a></li>
-            <li {% if page == "wishlist"  %}class="active"{% endif %}><a href="/wishlist">Wishlist</a></li>
-            <li {% if page == "rules"     %}class="active"{% endif %}><a href="/rules">Rules</a></li>
+            <li {% if page == "recipient" %}class="active"{% endif %}><a href="/secret-santa/recipient">Recipient</a></li>
+            <li {% if page == "wishlist"  %}class="active"{% endif %}><a href="/secret-santa/wishlist">Wishlist</a></li>
+            <li {% if page == "rules"     %}class="active"{% endif %}><a href="/secret-santa/rules">Rules</a></li>
             {% if "admin" in user_groups %}
-            <li><a href="/admin">Admin</a></li>
+            <li><a href="/secret-santa/admin">Admin</a></li>
             {% endif %}
           </ul>
-          <p class="navbar-text pull-right">{% if username %}{{username}} | <a href="/auth/logout">Logout</a>{% else %} &nbsp; {% endif %}</p>
+          <p class="navbar-text pull-right">{% if username %}{{username}} | <a href="/secret-santa/auth/logout">Logout</a>{% else %} &nbsp; {% endif %}</p>
         </div>
 
       </div>
