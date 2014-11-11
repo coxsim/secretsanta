@@ -204,7 +204,11 @@ def index():
     if request.authorization:
         return redirect("/secret-santa/recipient", code=302)
     else:
-        return render_template( "welcome.html", page="welcome" )
+        return redirect("/secret-santa/welcome", code=302)
+
+@app.route('/secret-santa/welcome')
+def welcome():
+    return render_template( "welcome.html", page="welcome" )
 
 @app.route('/secret-santa/participants')
 @requires_auth
@@ -254,7 +258,6 @@ def wishlist():
                             user_groups = get_current_user_groups() )
 
 @app.route("/secret-santa/password-request", methods=['GET', 'POST'])
-@requires_auth
 def password_request():
     username = request.form.get("username", "").strip()
     password = PASSWORDS.get(username)
