@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Admin / Pairs{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important { color: #336699; }
+    </style>
+{% endblock %}
+{% block content %}
+
+<h2>Admin / Pairs</h2>
+
+<table>
+<thead><tr><th>Giver</th><th>Taker</th></tr></thead>
+<tbody>
+	{% for (giver, taker) in pairs.iteritems() %}
+	<tr><td>{{giver}}</td><td>{{taker}}</td></tr>
+	{% endfor %}
+</tbody>
+
+{% endblock %}

@@ -1,3 +1,4 @@
+Amanda Lin;Amanda.Lin@morganstanley.com
 Simon Cox;Simon.Cox@morganstanley.com
 Ling Ling;Ling.Ling@morganstanley.com
 Vincent Kwok;Vincent.Kwok@morganstanley.com
@@ -5,9 +6,8 @@ Terry Cheung;Terry.Cheung@morganstanley.com
 Apoorv Khurasia;Apoorv.Khurasia@MorganStanley.com
 Bryan Hui;Bryan.Hui@morganstanley.com
 Keith Wong;Keith.K.Wong@morganstanley.com
-Kairic Cheng;todo@morganstanley.com
+Kairic Cheng;Kairic.Cheng1@morganstanley.com
 Eva Chiu;Eva.Chiu@morganstanley.com
-Denny Zheng;todo@morganstanley.com
-Kai Le;todo@morganstanley.com
-Chenghua Liau;l.chenghua@gmail.com
-a;a
+Denny Zheng;Denny.Zheng@morganstanley.com
+Kai Yu;Kai.Yu@morganstanley.com
+Chenghua Liu;l.chenghua@gmail.com

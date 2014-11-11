@@ -1,8 +1,4 @@
-# Giver;Taker
-#
-#
-# previous years
-#
+# Giver/Taker
 Vincent.Kwok@morganstanley.com;Terry.Cheung@morganstanley.com
 Terry.Cheung@morganstanley.com;Vincent.Kwok@morganstanley.com
 Keith.K.Wong@morganstanley.com;l.chenghua@gmail.com

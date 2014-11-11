@@ -32,12 +32,14 @@ def read_dict_file(filename, separator = ";"):
     with codecs.open(os.path.join(data_dir, filename), "r", encoding='utf-8') as f:
         return dict( line.rstrip().split(separator) for line in f if not line.startswith("#") )
 
-def write_dict_file(filename, separator, dictionary, append = False):
+def write_dict_file(filename, separator, dictionary, append = False, header = ""):
     target = os.path.join(data_dir, filename)
     backup = os.path.join(data_dir, "%s.%s.bak" % (filename, datetime.datetime.now().strftime("%Y%m%d.%H%M%S")))
     shutil.copyfile(target, backup)
 
     with codecs.open(target, "w+" if append else "w", encoding='utf-8') as f:
+        if header:
+            f.write(header)
         for (k,v) in dictionary.iteritems():
             f.write("%s%s%s\n" % (k, separator, v))
 
@@ -55,7 +57,11 @@ def read_pairs():
     return read_dict_file("pairs.txt")
 
 def read_blacklist():
-    return read_dict_file("blacklist.txt")
+    previous_2012 = read_dict_file("pairs.2012.txt")
+    previous_2013 = read_dict_file("pairs.2013.txt")
+    #blacklist     = read_dict_file("blacklist.txt")
+    return dict( previous_2012.items() + previous_2013.items() )
+
 
 def read_wishlist():
     return read_dict_file("wishlist.txt")
@@ -155,7 +161,7 @@ def admin_passwords():
 @requires_auth
 @requires_roles("admin")
 def admin_pairs():
-    return str(read_pairs())
+    return render_template("pairs.html", pairs = read_pairs())
 
 @app.route("/admin/blacklist")
 @requires_auth
@@ -189,7 +195,7 @@ def admin_generate():
     while any(givers[i] == takers[i] or (givers[i], takers[i]) in blacklist_pairs for i in range(len(givers))):
         random.shuffle(takers)
 
-    write_dict_file("pairs.txt", ";", dict( (givers[i], takers[i]) for i in range(len(givers)) ) )
+    write_dict_file("pairs.txt", ";", dict( (givers[i], takers[i]) for i in range(len(givers)) ), header = "# Giver;Taker")
 
     return "done"
 
