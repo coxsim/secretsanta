@@ -39,7 +39,7 @@ def write_dict_file(filename, separator, dictionary, append = False, header = ""
 
     with codecs.open(target, "w+" if append else "w", encoding='utf-8') as f:
         if header:
-            f.write(header)
+            f.write("%s\n" % header)
         for (k,v) in dictionary.iteritems():
             f.write("%s%s%s\n" % (k, separator, v))
 
@@ -190,14 +190,14 @@ def admin_generate():
     givers = read_names().keys()
     takers = list(givers)
 
-    blacklist_pairs = read_blacklist()
+    blacklist_pairs = read_blacklist().items()
 
-    while any(givers[i] == takers[i] or (givers[i], takers[i]) in blacklist_pairs for i in range(len(givers))):
+    while any(giver == taker or (giver, taker) in blacklist_pairs for (giver, taker) in zip(givers, takers)):
         random.shuffle(takers)
 
-    write_dict_file("pairs.txt", ";", dict( (givers[i], takers[i]) for i in range(len(givers)) ), header = "# Giver;Taker")
+    write_dict_file("pairs.txt", ";", dict( zip(givers, takers) ), header = "# Giver;Taker")
 
-    return "done"
+    return redirect("/admin/pairs", code=302)
 
 @app.route('/')
 def index():
