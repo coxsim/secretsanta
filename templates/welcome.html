@@ -1,42 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Login - Secret Santa{% endblock %}
+{% block title %}Rules{% endblock %}
 {% block head %}
     {{ super() }}
     <style type="text/css">
         .important { color: #336699; }
+        .warning { color: red; }
     </style>
 {% endblock %}
 {% block content %}
-    
 
-<div class="important">{{msg}}</div>
+<h2>Welcome to the Secret Santa website</h2>
+
+<p><a href="/recipient" class="btn btn-primary">Login</a></p>
 
 <p>
 
-<form class="form-horizontal" action="/auth/login" method="POST">
+<form class="form-horizontal" action="/password-request" method="POST">
 
 <input type="hidden" name="from_page" value="{{from_page}}" />
 
 <fieldset>
 
 <!-- Form Name -->
-<legend>Login</legend>
+<legend>Request Password</legend>
 
 <!-- Text input-->
 <div class="control-group">
   <label class="control-label" for="username">E-Mail</label>
   <div class="controls">
     <input id="username" name="username" type="text" placeholder="e-mail" class="input-xlarge" required="">
-    <p class="help-block">e-mail</p>
-  </div>
-</div>
-
-<!-- Password input-->
-<div class="control-group">
-  <label class="control-label" for="password">Password</label>
-  <div class="controls">
-    <input id="password" name="password" type="password" placeholder="password" class="input-xlarge" required="">
-    <p class="help-block">Password</p>
+    <p class="help-block">Long MS e-mail (e.g. Forename.Surname@morganstanley.com)</p>
   </div>
 </div>
 
@@ -44,7 +37,7 @@
 <div class="control-group">
   <label class="control-label" for="submit"></label>
   <div class="controls">
-    <button class="btn btn-primary" type="submit">Login</button>
+    <button class="btn btn-primary" type="submit">Request</button>
   </div>
 </div>
 
@@ -53,5 +46,10 @@
 
 </p>
 
+{%if message %}<p><div class="{{message_level}}">{{message}}</div></p>{%endif%}
+
+<p><center><img src="/static/graphics-christmas-reindeer-910371.gif"/></center></p>
 
 {% endblock %}
+
+

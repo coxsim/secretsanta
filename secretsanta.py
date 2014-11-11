@@ -113,6 +113,8 @@ def requires_roles(*roles):
         return wrapped
     return wrapper
 
+
+
 @app.route("/auth/logout")
 def logout():
     return authenticate()
@@ -124,8 +126,8 @@ def logout():
 def admin_index():
     emails_enabled = (read_settings().get("emails_enabled", "False") == "True")
     return render_template( "admin.html",
-                        emails_enabled=emails_enabled,
-                        user_groups = get_current_user_groups() )
+                            emails_enabled=emails_enabled,
+                            user_groups = get_current_user_groups() )
 
 @app.route("/admin/toggle_enable_emails")
 @requires_auth
@@ -192,8 +194,15 @@ def admin_generate():
     return "done"
 
 @app.route('/')
-@requires_auth
 def index():
+    if request.authorization:
+        return redirect("/recipient", code=302)
+    else:
+        return render_template( "welcome.html", page="welcome" ) 
+
+@app.route('/recipient')
+@requires_auth
+def recipient():
     names = read_names()        
     print names
     giver_full_name = names[session["username"]]
@@ -228,6 +237,31 @@ def wishlist():
                             user_wish=user_wish,
                             recipient_forename=names[recipient].split(" ")[0] ,
                             user_groups = get_current_user_groups() )
+
+@app.route("/password-request", methods=['GET', 'POST'])
+@requires_auth
+def password_request():
+    username = request.form.get("username", "").strip()
+    password = PASSWORDS.get(username)
+    if password:
+        import emailutil
+        emailutil.send([username],
+                       "Secret Santa password", 
+                       body_plain = """
+Your password is:
+%s
+""" % password,
+                       body_html = """
+<p>Your password is:</p>
+<p><pre>%s</pre><p/>
+""" % password)
+        message = "Password sent to %s" % username
+        message_level = "important"
+    else:
+        message = "No account found for '%s'" % username
+        message_level = "warning"
+
+    return render_template( "welcome.html", page = "welcome", message = message, message_level = message_level )
 
 @app.route("/rules")
 @requires_auth
