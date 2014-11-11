@@ -49,9 +49,10 @@
         <div class="navbar-inner">
 
           <ul class="nav navbar-nav">
-            <li {% if page == "recipient" %}class="active"{% endif %}><a href="/secret-santa/recipient">Recipient</a></li>
-            <li {% if page == "wishlist"  %}class="active"{% endif %}><a href="/secret-santa/wishlist">Wishlist</a></li>
-            <li {% if page == "rules"     %}class="active"{% endif %}><a href="/secret-santa/rules">Rules</a></li>
+            <li {% if page == "recipient"    %}class="active"{% endif %}><a href="/secret-santa/recipient">Recipient</a></li>
+            <li {% if page == "wishlist"     %}class="active"{% endif %}><a href="/secret-santa/wishlist">Wishlist</a></li>
+            <li {% if page == "rules"        %}class="active"{% endif %}><a href="/secret-santa/rules">Rules</a></li>
+            <li {% if page == "participants" %}class="active"{% endif %}><a href="/secret-santa/participants">Participants</a></li>
             {% if "admin" in user_groups %}
             <li><a href="/secret-santa/admin">Admin</a></li>
             {% endif %}

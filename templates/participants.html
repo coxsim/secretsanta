@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Participants{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important { color: #336699; }
+    </style>
+{% endblock %}
+{% block content %}
+
+<h2>Participants</h2>
+
+<p>This years participants in the game are:</p>
+
+<p>
+<ul>
+{% for name in names.values() | sort %}
+<li>{{name}}</li>
+{% endfor %}
+</ul>
+</p>
+
+
+{% endblock %}

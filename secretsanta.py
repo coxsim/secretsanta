@@ -204,7 +204,16 @@ def index():
     if request.authorization:
         return redirect("/secret-santa/recipient", code=302)
     else:
-        return render_template( "welcome.html", page="welcome" ) 
+        return render_template( "welcome.html", page="welcome" )
+
+@app.route('/secret-santa/participants')
+@requires_auth
+def participants():
+    return render_template( "participants.html", 
+                            page="participants", 
+                            names=read_names(),
+                            username=session["username"], 
+                            user_groups = get_current_user_groups() ) 
 
 @app.route('/secret-santa/recipient')
 @requires_auth
