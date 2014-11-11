@@ -11,11 +11,11 @@
 
 <h2>Welcome to the Secret Santa website</h2>
 
-<p><a href="/secret-santa/recipient" class="btn btn-primary">Login</a></p>
+<p><a href="{{ url_for("recipient") }}" class="btn btn-primary">Login</a></p>
 
 <p>
 
-<form class="form-horizontal" action="/secret-santa/password-request" method="POST">
+<form class="form-horizontal" action="{{ url_for("password_request") }}" method="POST">
 
 <input type="hidden" name="from_page" value="{{from_page}}" />
 

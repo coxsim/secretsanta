@@ -15,11 +15,13 @@ from flask import request
 from flask import Response
 from flask import session
 from flask import redirect
-
+from flask import url_for
 
 
 app = Flask(__name__)
 app.secret_key = 'SALKAS DFLkdaDSF&*5462SDAsd@E#'
+app.config["APPLICATION_ROOT"] = "/secret-santa"
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(current_dir, "data")
@@ -121,12 +123,12 @@ def requires_roles(*roles):
 
 
 
-@app.route("/secret-santa/auth/logout")
-def logout():
+@app.route("/auth/switchuser")
+def auth_switchuser():
     return authenticate()
 
 
-@app.route("/secret-santa/admin")
+@app.route("/admin")
 @requires_auth
 @requires_roles("admin")
 def admin_index():
@@ -135,54 +137,57 @@ def admin_index():
                             emails_enabled=emails_enabled,
                             user_groups = get_current_user_groups() )
 
-@app.route("/secret-santa/admin/toggle_enable_emails")
+@app.route("/admin/toggle_enable_emails")
 @requires_auth
 @requires_roles("admin")
 def admin_toggle_enable_emails():
     settings = read_settings()
     settings["emails_enabled"] = (settings.get("emails_enabled", "False") != "True")
     write_settings(settings)
-    return redirect("/secret-santa/admin", code=302)
+    return redirect(url_for("admin_index"), code=302)
 
 
-@app.route("/secret-santa/admin/names")
+@app.route("/admin/names")
 @requires_auth
 @requires_roles("admin")
 def admin_names():
     return str(read_names())
 
-@app.route("/secret-santa/admin/passwords")
+@app.route("/admin/passwords")
 @requires_auth
 @requires_roles("admin")
 def admin_passwords():
     return str(read_passwords())
 
-@app.route("/secret-santa/admin/pairs")
+@app.route("/admin/pairs")
 @requires_auth
 @requires_roles("admin")
 def admin_pairs():
-    return render_template("pairs.html", pairs = read_pairs())
+    return render_template("pairs.html", 
+                            pairs = read_pairs(),
+                            username=session["username"], 
+                            user_groups = get_current_user_groups())
 
-@app.route("/secret-santa/admin/blacklist")
+@app.route("/admin/blacklist")
 @requires_auth
 @requires_roles("admin")
 def admin_blacklist():
     return str(read_blacklist())
 
-@app.route("/secret-santa/admin/wishlist")
+@app.route("/admin/wishlist")
 @requires_auth
 @requires_roles("admin")
 def admin_wishlist():
     return str(read_wishlist())
 
-@app.route("/secret-santa/admin/clearwishlist")
+@app.route("/admin/clearwishlist")
 @requires_auth
 @requires_roles("admin")
 def admin_clearwishlist():
     write_dict_file("wishlist.txt", ";", {} )
     return "done"
 
-@app.route("/secret-santa/admin/generate")
+@app.route("/admin/generate")
 @requires_auth
 @requires_roles("admin")
 def admin_generate():
@@ -197,20 +202,20 @@ def admin_generate():
 
     write_dict_file("pairs.txt", ";", dict( zip(givers, takers) ), header = "# Giver;Taker")
 
-    return redirect("/secret-santa/admin/pairs", code=302)
+    return redirect(url_for("admin_pairs"), code=302)
 
-@app.route('/secret-santa/')
+@app.route('/')
 def index():
     if request.authorization:
-        return redirect("/secret-santa/recipient", code=302)
+        return redirect(url_for("recipient"), code=302)
     else:
-        return redirect("/secret-santa/welcome", code=302)
+        return redirect(url_for("welcome"), code=302)
 
-@app.route('/secret-santa/welcome')
+@app.route('/welcome')
 def welcome():
     return render_template( "welcome.html", page="welcome" )
 
-@app.route('/secret-santa/participants')
+@app.route('/participants')
 @requires_auth
 def participants():
     return render_template( "participants.html", 
@@ -219,7 +224,7 @@ def participants():
                             username=session["username"], 
                             user_groups = get_current_user_groups() ) 
 
-@app.route('/secret-santa/recipient')
+@app.route('/recipient')
 @requires_auth
 def recipient():
     names = read_names()        
@@ -235,7 +240,7 @@ def recipient():
                             recipient_forename=names[recipient].split(" ")[0],
                             user_groups = get_current_user_groups() )
 
-@app.route("/secret-santa/wishlist", methods=['GET', 'POST'])
+@app.route("/wishlist", methods=['GET', 'POST'])
 @requires_auth
 def wishlist():
     user_wish = request.form.get("user_wish")
@@ -260,7 +265,7 @@ def wishlist():
                             message = message,
                             user_groups = get_current_user_groups() )
 
-@app.route("/secret-santa/password-request", methods=['GET', 'POST'])
+@app.route("/password-request", methods=['GET', 'POST'])
 def password_request():
     username = request.form.get("username", "").strip()
     password = PASSWORDS.get(username)
@@ -284,7 +289,7 @@ Your password is:
 
     return render_template( "welcome.html", page = "welcome", message = message, message_level = message_level )
 
-@app.route("/secret-santa/rules")
+@app.route("/rules")
 @requires_auth
 def rules():
     return render_template( "rules.html",
@@ -294,5 +299,21 @@ def rules():
 
 
 if __name__ == '__main__':
-    app.run(debug=True,
-            host='0.0.0.0')
+    # app.run(debug=True,
+    #         host='0.0.0.0')
+
+
+
+
+    # Relevant documents:
+    # http://werkzeug.pocoo.org/docs/middlewares/
+    # http://flask.pocoo.org/docs/patterns/appdispatch/
+    from werkzeug.serving import run_simple
+    from werkzeug.wsgi import DispatcherMiddleware
+    app.config['DEBUG'] = True
+    # Load a dummy app at the root URL to give 404 errors.
+    # Serve app at APPLICATION_ROOT for localhost development.
+    application = DispatcherMiddleware(Flask('dummy_app'), {
+        app.config['APPLICATION_ROOT']: app,
+    })
+    run_simple('localhost', 5000, application, use_debugger=True, use_reloader=True)

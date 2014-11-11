@@ -10,13 +10,13 @@
 
 <h2>Admin</h2>
 
-<p><a href="/secret-santa/admin/clearwishlist" class="btn btn-primary">Clear Wishlist</a></p>
-<p><a href="/secret-santa/admin/generate" class="btn btn-primary">Generate Pairs</a></p>
-<p><a href="/secret-santa/admin/names" class="btn btn-primary">Show Names</a></p>
-<p><a href="/secret-santa/admin/pairs" class="btn btn-primary">Show Pairs</a></p>
-<p><a href="/secret-santa/admin/passwords" class="btn btn-primary">Show Passwords</a></p>
-<p><a href="/secret-santa/admin/wishlist" class="btn btn-primary">Show Wishlist</a></p>
-<p><a href="/secret-santa/admin/toggle_enable_emails" class="btn btn-primary">Toggle Emails</a> - Currently {{emails_enabled}}</p>
+<p><a href="{{url_for("admin_clearwishlist")}}" class="btn btn-primary">Clear Wishlist</a></p>
+<p><a href="{{url_for("admin_generate")}}" class="btn btn-primary">Generate Pairs</a></p>
+<p><a href="{{url_for("admin_names")}}" class="btn btn-primary">Show Names</a></p>
+<p><a href="{{url_for("admin_pairs")}}" class="btn btn-primary">Show Pairs</a></p>
+<p><a href="{{url_for("admin_passwords")}}" class="btn btn-primary">Show Passwords</a></p>
+<p><a href="{{url_for("admin_wishlist")}}" class="btn btn-primary">Show Wishlist</a></p>
+<p><a href="{{url_for("admin_toggle_enable_emails")}}" class="btn btn-primary">Toggle Emails</a> - Currently {{emails_enabled}}</p>
 
 {% endblock %}
 

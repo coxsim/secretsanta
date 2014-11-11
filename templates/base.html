@@ -43,21 +43,21 @@
       <div class="navbar navbar-default" style="background-color:rgba(255,255,255,0.8);">
 
         <div class="navbar-header">
-          <a class="navbar-brand" href="/secret-santa/">Secret Santa</a>
+          <a class="navbar-brand" href="{{url_for("index")}}">Secret Santa</a>
         </div>
 
         <div class="navbar-inner">
 
           <ul class="nav navbar-nav">
-            <li {% if page == "recipient"    %}class="active"{% endif %}><a href="/secret-santa/recipient">Recipient</a></li>
-            <li {% if page == "wishlist"     %}class="active"{% endif %}><a href="/secret-santa/wishlist">Wishlist</a></li>
-            <li {% if page == "rules"        %}class="active"{% endif %}><a href="/secret-santa/rules">Rules</a></li>
-            <li {% if page == "participants" %}class="active"{% endif %}><a href="/secret-santa/participants">Participants</a></li>
+            <li {% if page == "recipient"    %}class="active"{% endif %}><a href="{{ url_for("recipient") }}">Recipient</a></li>
+            <li {% if page == "wishlist"     %}class="active"{% endif %}><a href="{{ url_for("wishlist") }}">Wishlist</a></li>
+            <li {% if page == "rules"        %}class="active"{% endif %}><a href="{{ url_for("rules") }}">Rules</a></li>
+            <li {% if page == "participants" %}class="active"{% endif %}><a href="{{ url_for("participants") }}">Participants</a></li>
             {% if "admin" in user_groups %}
-            <li><a href="/secret-santa/admin">Admin</a></li>
+            <li><a href="{{ url_for("admin_index") }}">Admin</a></li>
             {% endif %}
           </ul>
-          <p class="navbar-text pull-right">{% if username %}{{username}} | <a href="/secret-santa/auth/logout">Logout</a>{% else %} &nbsp; {% endif %}</p>
+          <p class="navbar-text pull-right">{% if username %}{{username}} {% else %} &nbsp; {% endif %}</p>
         </div>
 
       </div>
