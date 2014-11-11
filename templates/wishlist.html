@@ -22,7 +22,13 @@
 
 <hr/>
 
-<p>Your wishlist request is:</p>
+<p>
+{% if user_wish %}
+Your wishlist request is: <span class="important">{{user_wish}}</span>
+{% else %}
+Choose your wishlist request:
+{% endif %}
+</p>
 
 <p>
 <form class="form-horizontal" action="/secret-santa/wishlist" method="POST">
