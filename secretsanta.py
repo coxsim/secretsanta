@@ -243,8 +243,10 @@ def wishlist():
     if user_wish:
         wishlist[session["username"]] = user_wish
         write_dict_file("wishlist.txt", ";", wishlist)
+        message = "Wishlist selection '%s' saved" % user_wish
     else:
         user_wish = wishlist.get(session["username"], "")
+        message = ""
 
     names = read_names()           
     pairs = read_pairs()
@@ -254,7 +256,8 @@ def wishlist():
                             username=session["username"], 
                             wishlist=wishlist.values(), 
                             user_wish=user_wish,
-                            recipient_forename=names[recipient].split(" ")[0] ,
+                            recipient_forename=names[recipient].split(" ")[0],
+                            message = message,
                             user_groups = get_current_user_groups() )
 
 @app.route("/secret-santa/password-request", methods=['GET', 'POST'])
