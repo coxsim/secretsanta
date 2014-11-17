@@ -61,7 +61,6 @@ def read_pairs():
 def read_blacklist():
     previous_2012 = read_dict_file("pairs.2012.txt")
     previous_2013 = read_dict_file("pairs.2013.txt")
-    #blacklist     = read_dict_file("blacklist.txt")
     return dict( previous_2012.items() + previous_2013.items() )
 
 
@@ -70,6 +69,9 @@ def read_wishlist():
 
 def read_settings():
     return read_dict_file("settings.txt", ":")
+
+def read_overrides():
+    return dict( (giver.lower(), taker.lower()) for (giver, taker) in read_dict_file("overrides.txt").iteritems() )
 
 def write_settings(settings):
     write_dict_file("settings.txt", ":", settings)
@@ -195,12 +197,23 @@ def admin_generate():
     givers = read_names().keys()
     takers = list(givers)
 
+    overrides = read_overrides()
+
+    for (giver, taker) in overrides.iteritems():
+        givers.remove(giver)
+        takers.remove(taker)
+
     blacklist_pairs = read_blacklist().items()
 
     while any(giver == taker or (giver, taker) in blacklist_pairs for (giver, taker) in zip(givers, takers)):
         random.shuffle(takers)
 
-    write_dict_file("pairs.txt", ";", dict( zip(givers, takers) ), header = "# Giver;Taker")
+    pairs = dict(zip(givers, takers))
+
+    for (giver, taker) in overrides.iteritems():
+        pairs[giver] = taker
+
+    write_dict_file("pairs.txt", ";", pairs, header="# Giver;Taker")
 
     return redirect(url_for("admin_pairs"), code=302)
 
