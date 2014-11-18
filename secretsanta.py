@@ -280,7 +280,7 @@ def wishlist():
 
 @app.route("/password-request", methods=['GET', 'POST'])
 def password_request():
-    username = request.form.get("username", "").strip()
+    username = request.form.get("username", "").strip().lower()
     password = PASSWORDS.get(username)
     if password:
         import emailutil
