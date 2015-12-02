@@ -62,20 +62,27 @@ def read_groups():
 def read_pairs():
     return read_dict_file("pairs.txt")
 
+
+def flatten(list):
+    return [item for sublist in list for item in sublist]
+
+
 def read_blacklist():
-    previous_2012 = read_dict_file("pairs.2012.txt")
-    previous_2013 = read_dict_file("pairs.2013.txt")
-    return dict( previous_2012.items() + previous_2013.items() )
+    years = ["2012", "2013", "2014"]
+    return dict(flatten(read_dict_file("pairs.{}.txt".format(year) for year in years)))
 
 
 def read_wishlist():
     return read_dict_file("wishlist.txt")
 
+
 def read_settings():
     return read_dict_file("settings.txt", ":")
 
+
 def read_overrides():
-    return dict( (giver.lower(), taker.lower()) for (giver, taker) in read_dict_file("overrides.txt").iteritems() )
+    return dict((giver.lower(), taker.lower()) for (giver, taker) in read_dict_file("overrides.txt").iteritems())
+
 
 def write_settings(settings):
     write_dict_file("settings.txt", ":", settings)
