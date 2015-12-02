@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 gmail_user = "MorganStanley.SecretSanta@gmail.com"
-gmail_pwd = "coxsimcoxsim"
+gmail_pwd = "coxsimcoxsim2"
 
 def send(recipients, subject, body_plain = "", body_html = "", sender = ""):
 	if body_plain and body_html:
