@@ -2,9 +2,6 @@
 
 import random
 import os
-import codecs
-import shutil
-import datetime
 from functools import wraps
 
 from jinja2 import Environment, FileSystemLoader
@@ -17,46 +14,28 @@ from flask import session
 from flask import redirect
 from flask import url_for
 
+from utils import read_dict_file, write_dict_file, current_dir, read_settings
+
 
 app = Flask(__name__)
 app.secret_key = 'SALKAS DFLkdaDSF&*5462SDAsd@E#'
 app.config["APPLICATION_ROOT"] = "/secret-santa"
 
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(current_dir, "data")
 env = Environment(loader=FileSystemLoader(
     os.path.join(current_dir,'templates'))
 )
 
 
-def read_dict_file(filename, separator=";"):
-    with codecs.open(os.path.join(data_dir, filename), "r", encoding='utf-8') as f:
-        return dict(line.rstrip().split(separator) for line in f if not line.startswith("#"))
-
-
-def write_dict_file(filename, separator, dictionary, append = False, header = ""):
-    target = os.path.join(data_dir, filename)
-    backup = os.path.join(data_dir, "%s.%s.bak" % (filename, datetime.datetime.now().strftime("%Y%m%d.%H%M%S")))
-    shutil.copyfile(target, backup)
-
-    with codecs.open(target, "w+" if append else "w", encoding='utf-8') as f:
-        if header:
-            f.write("%s\n" % header)
-        for (k,v) in dictionary.iteritems():
-            f.write("%s%s%s\n" % (k, separator, v))
-
-
 def read_passwords():
-    return dict( (email.lower(), password) for (email, password) in read_dict_file("passwords.txt").iteritems() )
+    return dict((email.lower(), password) for (email, password) in read_dict_file("passwords.txt").iteritems())
 
 
 def read_names():
-    return dict( (email.lower(), name) for (name, email) in read_dict_file("names.txt").iteritems() )
+    return dict((email.lower(), name) for (name, email) in read_dict_file("names.txt").iteritems())
 
 
 def read_groups():
-    return dict( (email.lower(), set(group.split(","))) for (email, group) in read_dict_file("groups.txt").iteritems() )
+    return dict((email.lower(), set(group.split(","))) for (email, group) in read_dict_file("groups.txt").iteritems())
 
 
 def read_pairs():
@@ -74,10 +53,6 @@ def read_blacklist():
 
 def read_wishlist():
     return read_dict_file("wishlist.txt")
-
-
-def read_settings():
-    return read_dict_file("settings.txt", ":")
 
 
 def read_overrides():
