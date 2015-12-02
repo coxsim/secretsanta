@@ -69,7 +69,7 @@ def flatten(list):
 
 def read_blacklist():
     years = ["2012", "2013", "2014"]
-    return dict(flatten(read_dict_file("pairs.{}.txt".format(year) for year in years)))
+    return dict(flatten(read_dict_file("pairs.{}.txt".format(year)).items() for year in years))
 
 
 def read_wishlist():
