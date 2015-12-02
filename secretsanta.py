@@ -30,9 +30,10 @@ env = Environment(loader=FileSystemLoader(
 )
 
 
-def read_dict_file(filename, separator = ";"):
+def read_dict_file(filename, separator=";"):
     with codecs.open(os.path.join(data_dir, filename), "r", encoding='utf-8') as f:
-        return dict( line.rstrip().split(separator) for line in f if not line.startswith("#") )
+        return dict(line.rstrip().split(separator) for line in f if not line.startswith("#"))
+
 
 def write_dict_file(filename, separator, dictionary, append = False, header = ""):
     target = os.path.join(data_dir, filename)
@@ -45,11 +46,14 @@ def write_dict_file(filename, separator, dictionary, append = False, header = ""
         for (k,v) in dictionary.iteritems():
             f.write("%s%s%s\n" % (k, separator, v))
 
+
 def read_passwords():
     return dict( (email.lower(), password) for (email, password) in read_dict_file("passwords.txt").iteritems() )
 
+
 def read_names():
     return dict( (email.lower(), name) for (name, email) in read_dict_file("names.txt").iteritems() )
+
 
 def read_groups():
     return dict( (email.lower(), set(group.split(","))) for (email, group) in read_dict_file("groups.txt").iteritems() )
@@ -81,7 +85,6 @@ PASSWORDS = read_passwords()
 GROUPS = read_groups()
 
 
-
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
@@ -93,16 +96,23 @@ def check_auth(username, password):
     session["username"] = username
     return True
 
+
+EMPTY_SET = set()
+
+
 def user_groups(username):
-    return GROUPS.get(username, {})
+    return GROUPS.get(username, EMPTY_SET)
+
 
 def get_current_user_groups():
     return user_groups(session["username"])
+
 
 def authenticate():
     """Sends a 401 response that enables basic auth"""
     return Response("""Could not verify your access level for that URL.<br/>
 You have to login with proper credentials""", 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
 
 def requires_auth(f):
     @wraps(f)
@@ -112,6 +122,7 @@ def requires_auth(f):
             return authenticate()
         return f(*args, **kwargs)
     return decorated
+
 
 def requires_roles(*roles):
     def wrapper(f):
@@ -124,6 +135,8 @@ def requires_roles(*roles):
     return wrapper
 
 
+# -------------------------------------------------------------------------------------------------
+
 
 @app.route("/auth/switchuser")
 def auth_switchuser():
@@ -135,9 +148,9 @@ def auth_switchuser():
 @requires_roles("admin")
 def admin_index():
     emails_enabled = (read_settings().get("emails_enabled", "False") == "True")
-    return render_template( "admin.html",
-                            emails_enabled=emails_enabled,
-                            user_groups = get_current_user_groups() )
+    return render_template("admin.html",
+                           emails_enabled=emails_enabled,
+                           user_groups=get_current_user_groups())
 
 @app.route("/admin/toggle_enable_emails")
 @requires_auth
@@ -155,20 +168,23 @@ def admin_toggle_enable_emails():
 def admin_names():
     return str(read_names())
 
+
 @app.route("/admin/passwords")
 @requires_auth
 @requires_roles("admin")
 def admin_passwords():
     return str(read_passwords())
 
+
 @app.route("/admin/pairs")
 @requires_auth
 @requires_roles("admin")
 def admin_pairs():
     return render_template("pairs.html", 
-                            pairs = read_pairs(),
+                            pairs=read_pairs(),
                             username=session["username"], 
-                            user_groups = get_current_user_groups())
+                            user_groups=get_current_user_groups())
+
 
 @app.route("/admin/blacklist")
 @requires_auth
@@ -176,18 +192,21 @@ def admin_pairs():
 def admin_blacklist():
     return str(read_blacklist())
 
+
 @app.route("/admin/wishlist")
 @requires_auth
 @requires_roles("admin")
 def admin_wishlist():
     return str(read_wishlist())
 
+
 @app.route("/admin/clearwishlist")
 @requires_auth
 @requires_roles("admin")
 def admin_clearwishlist():
-    write_dict_file("wishlist.txt", ";", {} )
+    write_dict_file("wishlist.txt", ";", {})
     return "done"
+
 
 @app.route("/admin/generate")
 @requires_auth
@@ -217,6 +236,7 @@ def admin_generate():
 
     return redirect(url_for("admin_pairs"), code=302)
 
+
 @app.route('/')
 def index():
     if request.authorization:
@@ -224,18 +244,21 @@ def index():
     else:
         return redirect(url_for("welcome"), code=302)
 
+
 @app.route('/welcome')
 def welcome():
-    return render_template( "welcome.html", page="welcome" )
+    return render_template("welcome.html", page="welcome")
+
 
 @app.route('/participants')
 @requires_auth
 def participants():
-    return render_template( "participants.html", 
-                            page="participants", 
-                            names=read_names(),
-                            username=session["username"], 
-                            user_groups = get_current_user_groups() ) 
+    return render_template("participants.html",
+                           page="participants",
+                           names=read_names(),
+                           username=session["username"],
+                           user_groups = get_current_user_groups())
+
 
 @app.route('/recipient')
 @requires_auth
@@ -245,13 +268,14 @@ def recipient():
     giver_full_name = names[session["username"]]
     pairs = read_pairs()
     recipient = pairs[session["username"]]
-    return render_template( "santa.html",
-                            page="recipient", 
-                            username=session["username"], 
-                            giver_forename=giver_full_name.split(" ")[0],
-                            recipient_full_name=names[recipient],
-                            recipient_forename=names[recipient].split(" ")[0],
-                            user_groups = get_current_user_groups() )
+    return render_template("santa.html",
+                           page="recipient",
+                           username=session["username"],
+                           giver_forename=giver_full_name.split(" ")[0],
+                           recipient_full_name=names[recipient],
+                           recipient_forename=names[recipient].split(" ")[0],
+                           user_groups = get_current_user_groups())
+
 
 @app.route("/wishlist", methods=['GET', 'POST'])
 @requires_auth
@@ -269,14 +293,15 @@ def wishlist():
     names = read_names()           
     pairs = read_pairs()
     recipient = pairs[session["username"]]
-    return render_template( "wishlist.html",
-                            page="wishlist", 
-                            username=session["username"], 
-                            wishlist=wishlist.values(), 
-                            user_wish=user_wish,
-                            recipient_forename=names[recipient].split(" ")[0],
-                            message = message,
-                            user_groups = get_current_user_groups() )
+    return render_template("wishlist.html",
+                           page="wishlist",
+                           username=session["username"],
+                           wishlist=wishlist.values(),
+                           user_wish=user_wish,
+                           recipient_forename=names[recipient].split(" ")[0],
+                           message=message,
+                           user_groups=get_current_user_groups())
+
 
 @app.route("/password-request", methods=['GET', 'POST'])
 def password_request():
@@ -286,11 +311,11 @@ def password_request():
         import emailutil
         emailutil.send([username],
                        "Secret Santa password", 
-                       body_plain = """
+                       body_plain="""
 Your password is:
 %s
 """ % password,
-                       body_html = """
+                       body_html="""
 <p>Your password is:</p>
 <p><pre>%s</pre><p/>
 """ % password)
@@ -300,15 +325,16 @@ Your password is:
         message = "No account found for '%s'" % username
         message_level = "warning"
 
-    return render_template( "welcome.html", page = "welcome", message = message, message_level = message_level )
+    return render_template("welcome.html", page="welcome", message=message, message_level=message_level)
+
 
 @app.route("/rules")
 @requires_auth
 def rules():
-    return render_template( "rules.html",
-                            page="rules", 
-                            username=session["username"],
-                            user_groups = get_current_user_groups() )
+    return render_template("rules.html",
+                           page="rules",
+                           username=session["username"],
+                           user_groups=get_current_user_groups())
 
 
 if __name__ == '__main__':
